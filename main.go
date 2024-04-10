@@ -15,7 +15,7 @@ func setupRaft(dir, nodeId, raftAddress string, pf *pgFsm) (*raft.Raft, error) {
 		return nil, err
 	}
 
-	store, err := raftboltdb.NewBoltStore(path.Join(dir, "bolt"))
+	store, err := NewBoltStore(path.Join(dir, "bolt"))
 	if err != nil {
 		return nil, err
 	}

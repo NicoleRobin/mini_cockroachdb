@@ -3,6 +3,7 @@ module github.com/nicolerobin/mini_cockroachdb
 go 1.20
 
 require (
+	github.com/google/uuid v1.6.0
 	github.com/hashicorp/raft v1.6.1
 	github.com/pganalyze/pg_query_go/v2 v2.2.0
 	go.etcd.io/bbolt v1.3.9

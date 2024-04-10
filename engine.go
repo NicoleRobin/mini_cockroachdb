@@ -1,8 +1,11 @@
 package mini_cockroachdb
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+
+	"github.com/google/uuid"
 	pgquery "github.com/pganalyze/pg_query_go/v2"
 	bolt "go.etcd.io/bbolt"
 )
@@ -94,7 +97,7 @@ func (pe *pgEngine) executeInsert(stmt *pgquery.InsertStmt) error {
 			return fmt.Errorf("could not marshal row: %s", err)
 		}
 
-		id := uuid.New.String()
+		id := uuid.New().String()
 		err = pe.db.Update(func(tx *bolt.Tx) error {
 			bkt, err := tx.CreateBucketIfNotExists(pe.bucketName)
 			if err != nil {
@@ -110,8 +113,65 @@ func (pe *pgEngine) executeInsert(stmt *pgquery.InsertStmt) error {
 	return nil
 }
 
-func (pe *pgEngine) executeSelect(stmt *pgquery.SelectStmt) error {
-	return nil
+type pgResult struct {
+	fieldNames []string
+	filedTypes []string
+	rows       [][]any
+}
+
+func (pe *pgEngine) executeSelect(stmt *pgquery.SelectStmt) (*pgResult, error) {
+	tblName := stmt.FromClause[0].GetRangeVar().Relname
+	tbl, err := pe.getTableDefinition(tblName)
+	if err != nil {
+		return nil, err
+	}
+
+	results := &pgResult{}
+	for _, c := range stmt.TargetList {
+		fieldName := c.GetResTarget().Val.GetColumnRef().Fields[0].GetString_().Str
+		results.fieldNames = append(results.fieldNames, fieldName)
+
+		fieldType := ""
+		for i, cn := range tbl.ColumnNames {
+			if cn == fieldName {
+				fieldType = tbl.ColumnTypes[i]
+			}
+		}
+
+		if fieldType == "" {
+			return nil, fmt.Errorf("unknown field: %s", fieldName)
+		}
+
+		results.filedTypes = append(results.filedTypes, fieldType)
+	}
+
+	prefix := []byte("row_" + tblName + "_")
+	err = pe.db.View(func(tx *bolt.Tx) error {
+		c := tx.Bucket(pe.bucketName).Cursor()
+		for k, v := c.Seek(prefix); k != nil && bytes.HasPrefix(k, prefix); k, v = c.Next() {
+			var row []any
+			err = json.Unmarshal(v, &row)
+			if err != nil {
+				return fmt.Errorf("unable to unmarshal row: %s", err)
+			}
+
+			var targetRows []any
+			for _, target := range results.fieldNames {
+				for i, field := range tbl.ColumnNames {
+					if target == field {
+						targetRows = append(targetRows, row[i])
+					}
+				}
+			}
+			results.rows = append(results.rows, targetRows)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return results, nil
 }
 
 func (pe *pgEngine) getTableDefinition(name string) (*tableDefinition, error) {
@@ -132,4 +192,15 @@ func (pe *pgEngine) getTableDefinition(name string) (*tableDefinition, error) {
 	})
 
 	return &tbl, err
+}
+
+func (pe *pgEngine) delete() error {
+	return pe.db.Update(func(tx *bolt.Tx) error {
+		bkt := tx.Bucket(pe.bucketName)
+		if bkt != nil {
+			return tx.DeleteBucket(pe.bucketName)
+		}
+
+		return nil
+	})
 }
