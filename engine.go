@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 
 	"github.com/google/uuid"
 	pgquery "github.com/pganalyze/pg_query_go/v2"
@@ -40,7 +41,11 @@ func (pe *pgEngine) execute(tree *pgquery.ParseResult) error {
 		}
 
 		if c := n.GetSelectStmt(); c != nil {
-			return pe.executeSelect(c)
+			results, err := pe.executeSelect(c)
+			if err != nil {
+				return fmt.Errorf("pe.executeSelect() failed, err: %w", err)
+			}
+			log.Printf("pe.executeSelect() success, results: %+v", results)
 		}
 
 		return fmt.Errorf("unknown statement type: %s", stmt)

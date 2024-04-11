@@ -1,9 +1,6 @@
 package mini_cockroachdb
 
 import (
-	"fmt"
-	"io"
-
 	"github.com/hashicorp/raft"
 )
 
@@ -14,11 +11,3 @@ func (sn snapshotNoop) Persist(sink raft.SnapshotSink) error {
 }
 
 func (sn snapshotNoop) Release() {}
-
-func (pf *pgFsm) Snapshot() (raft.FSMSnapshot, error) {
-	return snapshotNoop{}, nil
-}
-
-func (pf *pgFsm) Restore(rc io.ReadCloser) error {
-	return fmt.Errorf("nothing to restore")
-}

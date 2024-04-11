@@ -1,18 +1,17 @@
 package mini_cockroachdb
 
 import (
-	"context"
 	"fmt"
-
 	"github.com/hashicorp/raft"
 	pgquery "github.com/pganalyze/pg_query_go/v2"
+	"io"
 )
 
 type pgFsm struct {
 	pe *pgEngine
 }
 
-func (pf *pgFsm) Apply(ctx context.Context, log *raft.Log) interface{} {
+func (pf *pgFsm) Apply(log *raft.Log) interface{} {
 	switch log.Type {
 	case raft.LogCommand:
 		ast, err := pgquery.Parse(string(log.Data))
@@ -28,4 +27,12 @@ func (pf *pgFsm) Apply(ctx context.Context, log *raft.Log) interface{} {
 		panic(fmt.Errorf("unknown raft log type: %#v", log.Type))
 	}
 	return nil
+}
+
+func (pf *pgFsm) Snapshot() (raft.FSMSnapshot, error) {
+	return snapshotNoop{}, nil
+}
+
+func (pf *pgFsm) Restore(rc io.ReadCloser) error {
+	return fmt.Errorf("nothing to restore")
 }

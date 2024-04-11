@@ -2,11 +2,14 @@ package mini_cockroachdb
 
 import (
 	"fmt"
-	"github.com/hashicorp/raft"
+	"log"
 	"net"
 	"os"
 	"path"
 	"time"
+
+	"github.com/hashicorp/raft"
+	"github.com/hashicorp/raft-boltdb"
 )
 
 func setupRaft(dir, nodeId, raftAddress string, pf *pgFsm) (*raft.Raft, error) {
@@ -15,7 +18,7 @@ func setupRaft(dir, nodeId, raftAddress string, pf *pgFsm) (*raft.Raft, error) {
 		return nil, err
 	}
 
-	store, err := NewBoltStore(path.Join(dir, "bolt"))
+	store, err := raftboltdb.NewBoltStore(path.Join(dir, "bolt"))
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +41,7 @@ func setupRaft(dir, nodeId, raftAddress string, pf *pgFsm) (*raft.Raft, error) {
 	raftCfg := raft.DefaultConfig()
 	raftCfg.LocalID = raft.ServerID(nodeId)
 
-	r, err := raft.NewRaft(raftCfg, pf, store, snapshots, transport)
+	r, err := raft.NewRaft(raftCfg, pf, store, store, snapshots, transport)
 	if err != nil {
 		return nil, fmt.Errorf("could not create raft instance: %s", err)
 	}
@@ -56,5 +59,8 @@ func setupRaft(dir, nodeId, raftAddress string, pf *pgFsm) (*raft.Raft, error) {
 }
 
 func main() {
-	fmt.Println("mini CockroachDb ...")
+	if err := Execute(); err != nil {
+		log.Printf("Execute() failed, err: %s\n", err)
+		os.Exit(-1)
+	}
 }
