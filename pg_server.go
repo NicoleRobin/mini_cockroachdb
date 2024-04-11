@@ -1,16 +1,17 @@
-package mini_cockroachdb
+package main
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/raft"
-	"github.com/jackc/pgproto3/v2"
-	pgquery "github.com/pganalyze/pg_query_go/v2"
-	bolt "go.etcd.io/bbolt"
 	"log"
 	"net"
 	"strings"
 	"time"
+
+	"github.com/hashicorp/raft"
+	"github.com/jackc/pgproto3/v2"
+	pgquery "github.com/pganalyze/pg_query_go/v2"
+	bolt "go.etcd.io/bbolt"
 )
 
 type pgConn struct {

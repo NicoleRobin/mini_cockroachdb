@@ -1,4 +1,4 @@
-package mini_cockroachdb
+package main
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/raft"
-	"github.com/hashicorp/raft-boltdb"
+	raftboltdb "github.com/hashicorp/raft-boltdb"
 )
 
 func setupRaft(dir, nodeId, raftAddress string, pf *pgFsm) (*raft.Raft, error) {

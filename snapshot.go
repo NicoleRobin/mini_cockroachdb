@@ -1,4 +1,4 @@
-package mini_cockroachdb
+package main
 
 import (
 	"github.com/hashicorp/raft"

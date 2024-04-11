@@ -1,13 +1,14 @@
-package mini_cockroachdb
+package main
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
-	bolt "go.etcd.io/bbolt"
 	"log"
 	"net/http"
 	"os"
 	"path"
+
+	"github.com/spf13/cobra"
+	bolt "go.etcd.io/bbolt"
 )
 
 var rootCmd = &cobra.Command{
@@ -77,10 +78,10 @@ var (
 )
 
 func init() {
-	startCmd.PersistentFlags().StringVarP(&nodeId, "node-id", "n", "", "node id")
-	startCmd.PersistentFlags().IntVarP(&httpPort, "http-port", "h", 0, "http port")
-	startCmd.PersistentFlags().IntVarP(&raftPort, "raft-port", "h", 0, "raft port")
-	startCmd.PersistentFlags().IntVarP(&pgPort, "pg-port", "h", 0, "pg port")
+	startCmd.PersistentFlags().StringVarP(&nodeId, "node-id", "", "node-id-1", "node id")
+	startCmd.PersistentFlags().IntVarP(&httpPort, "http-port", "", 2222, "http port")
+	startCmd.PersistentFlags().IntVarP(&raftPort, "raft-port", "", 3333, "raft port")
+	startCmd.PersistentFlags().IntVarP(&pgPort, "pg-port", "", 4444, "pg port")
 
 	rootCmd.AddCommand(startCmd)
 }

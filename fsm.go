@@ -1,10 +1,11 @@
-package mini_cockroachdb
+package main
 
 import (
 	"fmt"
+	"io"
+
 	"github.com/hashicorp/raft"
 	pgquery "github.com/pganalyze/pg_query_go/v2"
-	"io"
 )
 
 type pgFsm struct {

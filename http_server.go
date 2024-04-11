@@ -1,10 +1,11 @@
-package mini_cockroachdb
+package main
 
 import (
 	"encoding/json"
-	"github.com/hashicorp/raft"
 	"log"
 	"net/http"
+
+	"github.com/hashicorp/raft"
 )
 
 type httpServer struct {
